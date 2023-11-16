@@ -1,0 +1,54 @@
+{
+  "project_info": {
+    "project_number": "942025057583",
+    "project_id": "mochat-5ebe2",
+    "storage_bucket": "mochat-5ebe2.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:942025057583:android:ed3107cb78b747d5256dda",
+        "android_client_info": {
+          "package_name": "com.example.moha_chat.moha_chat"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "942025057583-50d69v6ptb8m844kgl4cv09q127k1so3.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.moha_chat.moha_chat",
+            "certificate_hash": "e1b3026b8665b759671dfb7433b6202df24fd418"
+          }
+        },
+        {
+          "client_id": "942025057583-hak0s9dbdrit3aon239igu6fu4m9hc12.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA2C1Em8BdB7GacrOXsH1RveHWNgD9q9Sc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "942025057583-hak0s9dbdrit3aon239igu6fu4m9hc12.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "942025057583-040lvkvu852hm6lpn88co4sk8srsppg4.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.mohachat.mohaChat"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
