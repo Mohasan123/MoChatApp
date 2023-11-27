@@ -3,7 +3,6 @@ import 'dart:io';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:image_picker/image_picker.dart';
@@ -157,6 +156,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   //update Profile Button
                   ElevatedButton.icon(
                     style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.lightBlue,
                         shape: StadiumBorder(),
                         minimumSize: Size(mq.width * .4, mq.height * .06)),
                     onPressed: () {

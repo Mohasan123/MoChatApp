@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
 
@@ -39,10 +38,10 @@ class _ChatScreenState extends State<ChatScreen> {
     return GestureDetector(
       onTap: () => FocusScope.of(context).unfocus(),
       child: SafeArea(
-        child: WillPopScope(
+        child: PopScope(
           //if emoji is on & back button is pressed then close search
           //or else simple close current screen on back button click
-          onWillPop: () {
+          onPopInvoked: (bool dipPop) async {
             if (_showEmoji) {
               setState(() {
                 _showEmoji = !_showEmoji;
@@ -133,7 +132,10 @@ class _ChatScreenState extends State<ChatScreen> {
   Widget _appBar() {
     return InkWell(
       onTap: () {
-        Navigator.push(context, MaterialPageRoute(builder: (_) => ViewProfileScreen(user: widget.user)));
+        Navigator.push(
+            context,
+            MaterialPageRoute(
+                builder: (_) => ViewProfileScreen(user: widget.user)));
       },
       child: StreamBuilder(
           stream: APIs.getUserInfo(widget.user),
@@ -264,7 +266,8 @@ class _ChatScreenState extends State<ChatScreen> {
                         if (image != null) {
                           log('Image Path: ${image.path} ');
                           setState(() => _isUploading = true);
-                         await  APIs.sendChatImage(widget.user, File(image.path));
+                          await APIs.sendChatImage(
+                              widget.user, File(image.path));
                           setState(() => _isUploading = false);
                         }
                       },
@@ -283,8 +286,15 @@ class _ChatScreenState extends State<ChatScreen> {
               color: Colors.lightBlueAccent,
               onPressed: () {
                 if (_textController.text.isNotEmpty) {
-                  APIs.sendMessage(
-                      widget.user, _textController.text, Type.text);
+                  if (_list.isEmpty) {
+                    //on first message (add user to my_user collection of chat user)
+                    APIs.sendFirstMessage(
+                        widget.user, _textController.text, Type.text);
+                  } else {
+                    //simply send message
+                    APIs.sendMessage(
+                        widget.user, _textController.text, Type.text);
+                  }
                   _textController.text = '';
                 }
               },

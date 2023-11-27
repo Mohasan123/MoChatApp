@@ -8,6 +8,7 @@ version: 1.0.0+1
 environment:
   sdk: '>=3.1.5 <4.0.0'
 
+
 dependencies:
   flutter:
     sdk: flutter
@@ -27,8 +28,10 @@ dependencies:
   firebase_storage: ^11.5.0
   emoji_picker_flutter: ^1.6.3
   firebase_messaging: ^14.7.4
-  http: ^1.1.0
+  http: ^0.13.3
   flutter_notification_channel: ^2.0.0
+  image_gallery_saver: ^2.0.3
+  gallery_saver: ^2.1.0
 
 dev_dependencies:
   flutter_test:

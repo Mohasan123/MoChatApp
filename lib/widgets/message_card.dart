@@ -1,8 +1,13 @@
+import 'dart:developer';
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:gallery_saver/gallery_saver.dart';
 import 'package:moha_chat/api/api.dart';
 import 'package:moha_chat/helper/my_date_util.dart';
 
+import '../helper/dialogs.dart';
 import '../main.dart';
 import '../models/message.dart';
 
@@ -19,7 +24,7 @@ class _MessageCardState extends State<MessageCard> {
   @override
   Widget build(BuildContext context) {
     bool isMe = APIs.user.uid == widget.message.fromId;
-    return InkWell(
+    return GestureDetector(
         onLongPress: () {
           _showBottomSheet(isMe);
         },
@@ -167,23 +172,46 @@ class _MessageCardState extends State<MessageCard> {
                     color: Colors.grey, borderRadius: BorderRadius.circular(8)),
               ),
 
-           widget.message.type == Type.text?    //copy option
-           _OptionItem(
-               icon: Icon(
-                 Icons.copy,
-                 color: Colors.lightBlueAccent,
-                 size: 26,
-               ),
-               name: 'Copy Text',
-               onTap: () {}) :    //copy option
-           _OptionItem(
-               icon: Icon(
-                 Icons.download,
-                 color: Colors.lightBlueAccent,
-                 size: 26,
-               ),
-               name: 'Save Image',
-               onTap: () {}) ,
+              widget.message.type == Type.text
+                  ? //copy option
+                  _OptionItem(
+                      icon: Icon(
+                        Icons.copy,
+                        color: Colors.lightBlueAccent,
+                        size: 26,
+                      ),
+                      name: 'Copy Text',
+                      onTap: () async {
+                        await Clipboard.setData(
+                                ClipboardData(text: widget.message.msg))
+                            .then((value) {
+                          Navigator.pop(context);
+                          Dialogs.showSnackBar(context, 'Text Copied!');
+                        });
+                      })
+                  : //copy option
+                  _OptionItem(
+                      icon: Icon(
+                        Icons.download,
+                        color: Colors.lightBlueAccent,
+                        size: 26,
+                      ),
+                      name: 'Save Image',
+                      onTap: () async {
+                        try {
+                          log('Image Uri : ${widget.message.msg}');
+                          await GallerySaver.saveImage(widget.message.msg,
+                                  albumName: 'Mo Chat')
+                              .then((success) {
+                            Navigator.pop(context);
+                            if (success != null && success)
+                              Dialogs.showSnackBar(
+                                  context, 'Image Successfully Saved!');
+                          });
+                        } catch (e) {
+                          log('ErrorWhileSaving: $e');
+                        }
+                      }),
               Divider(
                 color: Colors.black54,
                 endIndent: mq.width * .04,
@@ -191,26 +219,33 @@ class _MessageCardState extends State<MessageCard> {
               ),
 
               //edit option
-              if(widget.message.type == Type.text && isMe)
-              _OptionItem(
-                  icon: Icon(
-                    Icons.edit,
-                    color: Colors.lightBlueAccent,
-                  ),
-                  name: 'Edit Message',
-                  onTap: () {}),
-
+              if (widget.message.type == Type.text && isMe)
+                _OptionItem(
+                    icon: Icon(
+                      Icons.edit,
+                      color: Colors.lightBlueAccent,
+                    ),
+                    name: 'Edit Message',
+                    onTap: () {
+                      //for hiding bottom sheet
+                      Navigator.pop(context);
+                      _showMessageUpdateDialog();
+                    }),
 
               //delete option
               if (isMe)
-              _OptionItem(
-                  icon: Icon(
-                    Icons.delete_forever,
-                    color: Colors.redAccent,
-                    size: 26,
-                  ),
-                  name: 'Delete Message',
-                  onTap: () {}),
+                _OptionItem(
+                    icon: Icon(
+                      Icons.delete_forever,
+                      color: Colors.redAccent,
+                      size: 26,
+                    ),
+                    name: 'Delete Message',
+                    onTap: () {
+                      APIs.deleteMessage(widget.message).then((value) {
+                        Navigator.pop(context);
+                      });
+                    }),
 
               Divider(
                 color: Colors.black54,
@@ -223,20 +258,76 @@ class _MessageCardState extends State<MessageCard> {
                     Icons.remove_red_eye,
                     color: Colors.lightBlueAccent,
                   ),
-                  name: 'Sent At: ',
+                  name:
+                      'Sent At: ${MyDataUtil.getMessageTime(context: context, time: widget.message.sent)}',
                   onTap: () {}),
 
               //read option
               _OptionItem(
-                  icon: Icon(
-                    Icons.remove_red_eye_outlined,
-                    color: Colors.greenAccent,
-                  ),
-                  name: 'Read At: ',
+                  icon: Icon(Icons.remove_red_eye_outlined,
+                      color: Colors.greenAccent),
+                  name: widget.message.read.isEmpty
+                      ? 'Not seen yet'
+                      : 'Read At: ${MyDataUtil.getMessageTime(context: context, time: widget.message.read)}',
                   onTap: () {}),
             ],
           );
         });
+  }
+
+  void _showMessageUpdateDialog() {
+    String updateMsg = widget.message.msg;
+
+    showDialog(
+        context: context,
+        builder: (_) => AlertDialog(
+          contentPadding: EdgeInsets.only(left: 24, right: 24, top: 20, bottom: 10),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20)),
+              //title
+              title: Row(
+                children: [
+                  Icon(
+                    Icons.message,
+                    color: Colors.lightBlue,
+                    size: 28,
+                  ),
+                  Text(' Update Message'),
+                ],
+              ),
+              //content
+              content: TextFormField(
+                initialValue: updateMsg,
+                maxLines: null,
+                onChanged: (value) => updateMsg = value,
+                decoration: InputDecoration(
+                    border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(15))),
+              ),
+              //actions
+              actions: [
+                MaterialButton(
+                  onPressed: () {
+                    //hide Alert Dialogs
+                    Navigator.pop(context);
+                  },
+                  child: Text(
+                    'Cancel',
+                    style: TextStyle(color: Colors.blue, fontSize: 16),
+                  ),
+                ), 
+                MaterialButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                    APIs.updateMessage(widget.message.msg as Messages, updateMsg);
+                  },
+                  child: Text(
+                    'Update',
+                    style: TextStyle(color: Colors.blue, fontSize: 16),
+                  ),
+                ),
+              ],
+            ));
   }
 }
 
@@ -251,7 +342,7 @@ class _OptionItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return InkWell(
-      onTap: () {},
+      onTap: onTap,
       child: Padding(
         padding: EdgeInsets.only(
             left: mq.width * .05,
